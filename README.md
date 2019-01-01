@@ -1,5 +1,5 @@
 # HeckBot
-A sharded Discord bot that reports current and upcoming quests.
+A sharded Discord bot that reports current and upcoming quests for the mobile game, Kingdoms of Heckfire.
 
 <img src="https://www.nerdarray.net/Images/HeckBot/screenshot.png" alt="sample application output" />
 
@@ -14,3 +14,6 @@ To run, you'll need a Discord bot token.
 4) Navigate to https://discordapp.com/api/oauth2/authorize?client_id=your_client_id&scope=bot&permissions=35840  <br/>Replace the value with your Client ID from step 1.
 
 5) Compile and run the bot.  @yourbotname quests to see upcoming quests.
+
+
+Quest timers calculated using https://github.com/christirichards algorithm.
