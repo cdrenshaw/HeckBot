@@ -11,8 +11,8 @@ namespace HeckBot.Modules
         [Command("info")]
         public async Task InfoAsync()
         {
-            var msg = $@"Hi {Context.User}! There are currently {Context.Client.Shards} shards!
-                This guild is being served by shard number {Context.Client.GetShardFor(Context.Guild).ShardId}";
+            var msg = $@"Hi {Context.User}! 
+                This guild is being served by HeckBot shard number {Context.Client.GetShardFor(Context.Guild).ShardId}";
             await ReplyAsync(msg);
         }
     }

@@ -1,9 +1,7 @@
 ﻿using Discord.Commands;
 using ImageMagick;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HeckBot.Modules
@@ -13,8 +11,11 @@ namespace HeckBot.Modules
         [Command("quests")]
         public async Task QuestsAsync()
         {
+            // First quest.
             var one = new DateTime(2018, 02, 13, 06, 05, 00, DateTimeKind.Utc).ToLocalTime();
+            // Current time.
             var ct = DateTime.Now.ToLocalTime();
+            // Hours between first quest and now.
             var interval = (ct - one).TotalHours;
             var i = Math.Ceiling(interval - (11 * (Math.Floor(interval / 11))));
             var t2 = (Math.Ceiling(interval) - interval) * 60;
@@ -50,8 +51,9 @@ namespace HeckBot.Modules
                 quests.Write(stream, MagickFormat.Png);
                 stream.Seek(0, SeekOrigin.Begin);
                 await Context.Channel.SendFileAsync(stream, "quests.png");
-
-                quests.Dispose();
+                // Clean up after ourselves
+                stream.Close();
+                quests.Dispose();               
             }
         }
 
@@ -59,10 +61,10 @@ namespace HeckBot.Modules
         {
             MagickImage image = new MagickImage(new MagickColor(QuestBgColor(q)), 365, 100);
 
-            if (m <= 0)
+            if (m <= 0) // this is the current quest.
             {
                 var mFull = m + 55;
-                var min = Math.Floor(mFull);
+                var min = Math.Floor(mFull);  // how many minutes left on the quest.
 
                 new Drawables()
                     .FontPointSize(36)
@@ -80,7 +82,7 @@ namespace HeckBot.Modules
             }
             else
             {
-                if (m > 60)
+                if (m > 60)  // more than an hour until quest starts.
                 {
                     var hFull = m / 60;
                     var h = Math.Floor(hFull);
@@ -99,7 +101,7 @@ namespace HeckBot.Modules
                         .TextAlignment(TextAlignment.Left)
                         .Text(20, 80, "Starts in " + h + " hours " + m + " minutes").Draw(image);
                 }
-                else
+                else // less than an hour until quest starts.
                 {
                     new Drawables()
                         .FontPointSize(36)
