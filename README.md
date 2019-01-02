@@ -22,4 +22,4 @@ To run from source, you'll need a Discord bot token.
 
 Quest timers calculated using https://github.com/christirichards algorithm.
 
-HeckBot is fan content and is not affiliated or endorsed by <a href="http://athinkingape.com/" target="_blank" title="A Thinking Ape Entertainment">A Thinking Ape Entertainment Ltd</a>.
+HeckBot is fan content and is not affiliated with or endorsed by <a href="http://athinkingape.com/" target="_blank" title="A Thinking Ape Entertainment">A Thinking Ape Entertainment Ltd</a>.
