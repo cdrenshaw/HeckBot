@@ -1,4 +1,7 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
+using HeckBot.Models;
+using HeckBot.Services;
 using ImageMagick;
 using System;
 using System.IO;
@@ -8,6 +11,15 @@ namespace HeckBot.Modules
 {
     public class HeckModule : ModuleBase<ShardedCommandContext>
     {
+        private readonly ShieldService _shieldService;
+
+        public HeckModule(ShieldService shieldService)
+        {
+            _shieldService = shieldService;
+        }
+
+        #region Quests Command Related
+
         [Command("quests")]
         public async Task QuestsAsync()
         {
@@ -53,7 +65,7 @@ namespace HeckBot.Modules
                 await Context.Channel.SendFileAsync(stream, "quests.png");
                 // Clean up after ourselves
                 stream.Close();
-                quests.Dispose();               
+                quests.Dispose();
             }
         }
 
@@ -198,5 +210,81 @@ namespace HeckBot.Modules
             }
             return q;
         }
+
+        #endregion // Quests Command Related
+
+
+        #region Shield Command Related
+
+        [Command("shield")]
+        public async Task ShieldTimer(string time = null)
+        {
+            // the user didn't send any input so give them instructions.
+            if (time == null)
+            {
+                await ReplyAsync("You need to tell me how many hours to set the timer for.  Valid values are 4, 8, 12, 24, 72, and 168.  For instance: @HeckBot shield 24");
+                return;
+            }
+
+            if (time.ToUpper() == "STOP" || time.ToUpper() == "CANCEL")
+            {
+                var success = await _shieldService.StopShieldTimers(Context.User);
+                if (success)
+                {
+                    await ReplyAsync("I've cancelled all of your running shield timers, " + Context.User.Username + ".");
+                }
+                else
+                {
+                    await ReplyAsync("I'm sorry, but I didn't find any shield timers for you, " + Context.User.Username + ".");
+                }
+
+                return;
+            }
+
+            // validate the input
+            int hours = 0;
+            try
+            {
+                // try to convert the value to an integer.
+                hours = Convert.ToInt32(time);
+            }
+            catch
+            {
+                await ReplyAsync("Please enter a value in hours between 4 and 168.  Valid shield timers are 4, 8, 12, 24, 72, or 168 hours long.");
+                return;
+            }
+
+            // max shield time is 7 days
+            if (hours > 168)
+            {
+                await ReplyAsync("You can only shield for a max of 7 days or 168 hours.  Valid shield timers are 4, 8, 12, 24, 72, or 168 hours long.");
+                return;
+            }
+
+            // min shield time is 4 hours
+            if (hours < 4)
+            {
+                await ReplyAsync("You can't shield for less than 4 hours.  Valid shield timers are 4, 8, 12, 24, 72, or 168 hours long.");
+                return;
+            }
+
+            // user supplied a value that doesn't equate to a shield in Heckfire.
+            if (hours != 4 && hours != 8 && hours != 12 && hours != 24 && hours != 72 && hours != 168)
+            {
+                await ReplyAsync("You can't shield for " + hours + " hours.  Valid shield timers are 4, 8, 12, 24, 72, or 168 hours long.");
+                return;
+            }
+
+            // Create a new timer and start it.
+            ShieldTimer timer = new ShieldTimer(Context.User, Context.Channel, hours);
+            await _shieldService.StartShieldTimer(timer);
+
+            // Let the user know.
+            await ReplyAsync("I've started a " + hours + " hour shield timer for you, " + Context.User.Username + ".  Make sure you have 'Allow direct messages from server members' enabled so that I can send you reminders about your shield.");
+            // DM them too.
+            await Context.User.SendMessageAsync("I've started your " + hours + " hour shield timer.  I'll DM you with increasing frequency beginning 3 hours before your shield expires.");
+        }
+
+        #endregion  // Shield Command Related
     }
 }

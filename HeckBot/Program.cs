@@ -24,7 +24,7 @@ namespace HeckBot
             // have 1 shard per 1500-2000 guilds your bot is in.
             var config = new DiscordSocketConfig
             {
-                TotalShards = 4
+                TotalShards = 2
             };
 
             // Dispose when app finishes.
@@ -56,6 +56,7 @@ namespace HeckBot
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<HttpClient>()
                 .AddSingleton<PictureService>()
+                .AddSingleton<ShieldService>()
                 .BuildServiceProvider();
         }
 
