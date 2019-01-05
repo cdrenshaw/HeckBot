@@ -11,10 +11,6 @@ namespace HeckBot
 {
     class Program
     {
-        private CommandService commands;
-        private DiscordSocketClient client;
-        private IServiceProvider services;
-
         static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
 
         public async Task StartAsync()
