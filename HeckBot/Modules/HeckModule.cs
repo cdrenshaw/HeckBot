@@ -275,6 +275,14 @@ namespace HeckBot.Modules
                 return;
             }
 
+            // only let the user start one timer.
+            var timerRunning = _shieldService.CheckRunningTimers(Context.User.Id);
+            if (timerRunning)
+            {
+                await ReplyAsync("You may only start one shield at a time.  Use '@HeckBot shield stop' to stop your current shield before starting a new one.");
+                return;
+            }
+
             // Create a new timer and start it.
             ShieldTimer timer = new ShieldTimer(Context.User, Context.Channel, hours);
             await _shieldService.StartShieldTimer(timer, true);

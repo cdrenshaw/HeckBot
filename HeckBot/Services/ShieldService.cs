@@ -76,6 +76,15 @@ namespace HeckBot.Services
             }
         }
 
+        public bool CheckRunningTimers(ulong userId)
+        {
+            var timer = _shieldTimers.FirstOrDefault(t => t.User.Id == userId);
+            if (timer != null)
+                return true;
+            else
+                return false;
+        }
+
         public async Task<bool> StartShieldTimer(ShieldTimer timer, bool saveTimer)
         {
             bool success = true;
