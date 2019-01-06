@@ -191,19 +191,19 @@ namespace HeckBot.Services
             }
 
             // More than 30 minutes until the shield expires.
-            if (timeLeft.TotalMinutes > 30)
+            if (timeLeft.TotalMinutes >= 30)
             {
                 shieldTimer.NextNotificationTime = shieldTimer.NextNotificationTime.AddMinutes(30);
             }
 
             // More than 15 minutes until the shield expires.
-            if (timeLeft.TotalMinutes > 15)
+            if (timeLeft.TotalMinutes >= 15 && timeLeft.TotalMinutes < 30)
             {
                 shieldTimer.NextNotificationTime = shieldTimer.NextNotificationTime.AddMinutes(15);
             }
 
             // More than 5 minutes until the shield expires.
-            if (timeLeft.TotalMinutes > 5)
+            if (timeLeft.TotalMinutes >= 5 && timeLeft.TotalMinutes < 15)
             {
                 shieldTimer.NextNotificationTime = shieldTimer.NextNotificationTime.AddMinutes(5);
             }
