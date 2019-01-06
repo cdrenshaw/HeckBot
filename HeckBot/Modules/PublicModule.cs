@@ -15,10 +15,12 @@ namespace HeckBot.Modules
         [Command("help")]
         public async Task HelpAsync()
         {
-            var msg = $@"Below is a list of things I can do:
-                @HeckBot quests - Returns the current and upcoming quests
-                @HeckBot shield <time> - Starts a shield timer for <time> hours
-                @HeckBot shield stop - Stops all shield timers";
+            var msg = "Below is a list of things I can do:\r\n" +
+                "@HeckBot quests - Returns the current and upcoming quests\r\n" +
+                "@HeckBot shield <time> - Starts a shield timer for <time> hours\r\n" +
+                "@HeckBot shield stop - Stops all shield timers\r\n" +
+                "@HeckBot info - Find out what shard you're connected to\r\n" +
+                "@HeckBot cat - purrrr\r\n";
             await ReplyAsync(msg);
         }
     }
