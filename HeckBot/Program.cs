@@ -13,7 +13,7 @@ namespace HeckBot
     class Program
     {
         private const int TOTAL_SHARDS = 4;
-        private bool _hasCheckedTimers = false;
+        
         private ShieldService _shieldService;
 
         static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
@@ -70,7 +70,7 @@ namespace HeckBot
                 .BuildServiceProvider();
         }
 
-        private async Task<Task> ReadyAsync(DiscordSocketClient shard)
+        private Task ReadyAsync(DiscordSocketClient shard)
         {
             Console.WriteLine($"Shard Number {shard.ShardId} is connected and ready!");
             return Task.CompletedTask;
