@@ -24,11 +24,9 @@ namespace HeckBot.Services
             _services = services;
 
             _shieldTimers = new List<ShieldTimer>();
-
-            RestoreSavedShields();
         }
 
-        private async Task RestoreSavedShields()
+        public async Task RestoreSavedShields()
         {
             var shields = await _db.GetSavedShields();
 
@@ -38,39 +36,42 @@ namespace HeckBot.Services
                 {
                     var channel = _client.GetChannel(s.ChannelId);
                     var user = _client.GetUser(s.UserId);
-                    
-                    // Check if the shield expired
-                    if (s.ShieldEndTime < DateTime.Now)
+
+                    if (user != null && channel != null)
                     {
-                        try
+                        // Check if the shield expired
+                        if (s.ShieldEndTime < DateTime.Now)
                         {
-                            // DM the user an update on their shield.
-                            await user.SendMessageAsync("Your shield has expired!");
+                            try
+                            {
+                                // DM the user an update on their shield.
+                                await user.SendMessageAsync("Your shield has expired!");
+                            }
+                            catch
+                            {
+                                // Something went wrong.  Send the message to the channel the timer request originated from.
+                                await ((ISocketMessageChannel)channel).SendMessageAsync(user.Username + "'s shield expired, but something is preventing us from sending them a DM to let them know.");
+                            }
+
+                            // clean up this timer.
+                            await _db.DeleteShield(s.Id);
+
+                            continue;
                         }
-                        catch
+
+                        ShieldTimer timer;
+
+                        if (s.NextNotificationTime < DateTime.Now)
                         {
-                            // Something went wrong.  Send the message to the channel the timer request originated from.
-                            await ((ISocketMessageChannel)channel).SendMessageAsync(user.Username + "'s shield expired, but something is preventing us from sending them a DM to let them know.");
+                            timer = new ShieldTimer(user, (ISocketMessageChannel)channel, s.ShieldEndTime, DateTime.Now.Add(new TimeSpan(0, 1, 0)), s.Id);
+                            await StartShieldTimer(timer, false);
+
+                            continue;
                         }
 
-                        // clean up this timer.
-                        await _db.DeleteShield(s.Id);
-
-                        continue;
-                    }
-
-                    ShieldTimer timer;
-
-                    if (s.NextNotificationTime < DateTime.Now)
-                    {
-                        timer = new ShieldTimer(user, (ISocketMessageChannel)channel, s.ShieldEndTime, DateTime.Now.Add(new TimeSpan(0, 1, 0)), s.Id);
+                        timer = new ShieldTimer(user, (ISocketMessageChannel)channel, s.ShieldEndTime, s.NextNotificationTime, s.Id);
                         await StartShieldTimer(timer, false);
-
-                        continue;
                     }
-
-                    timer = new ShieldTimer(user, (ISocketMessageChannel)channel, s.ShieldEndTime, s.NextNotificationTime, s.Id);
-                    await StartShieldTimer(timer, false);
                 }
             }
         }
@@ -84,6 +85,9 @@ namespace HeckBot.Services
 
             if (success)
             {
+                if (_shieldTimers.Contains(timer))
+                    _shieldTimers.Remove(timer);
+
                 timer.TimerTicked += Timer_TimerTicked;
                 _shieldTimers.Add(timer);
 

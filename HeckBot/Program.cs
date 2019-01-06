@@ -12,6 +12,10 @@ namespace HeckBot
 {
     class Program
     {
+        private const int TOTAL_SHARDS = 4;
+        private bool _hasCheckedTimers = false;
+        private ShieldService _shieldService;
+
         static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
 
         public async Task StartAsync()
@@ -21,7 +25,7 @@ namespace HeckBot
             // have 1 shard per 1500-2000 guilds your bot is in.
             var config = new DiscordSocketConfig
             {
-                TotalShards = 4
+                TotalShards = TOTAL_SHARDS
             };
 
             // Dispose when app finishes.
@@ -34,8 +38,10 @@ namespace HeckBot
                 // control per shard.
                 client.ShardReady += ReadyAsync;
                 client.Log += LogAsync;
+                client.ShardConnected += Client_ShardConnected;
 
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+                _shieldService = services.GetRequiredService<ShieldService>();
 
                 // Tokens should be considered secret data, and never hard-coded.
                 await client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("HECKBOT_TOKEN"));
@@ -43,6 +49,11 @@ namespace HeckBot
 
                 await Task.Delay(-1);
             }
+        }
+
+        private async Task Client_ShardConnected(DiscordSocketClient arg)
+        {
+            await _shieldService.RestoreSavedShields();
         }
 
         private ServiceProvider ConfigureServices(DiscordSocketConfig config)
@@ -59,7 +70,7 @@ namespace HeckBot
                 .BuildServiceProvider();
         }
 
-        private Task ReadyAsync(DiscordSocketClient shard)
+        private async Task<Task> ReadyAsync(DiscordSocketClient shard)
         {
             Console.WriteLine($"Shard Number {shard.ShardId} is connected and ready!");
             return Task.CompletedTask;
