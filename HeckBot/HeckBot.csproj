@@ -5,8 +5,10 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="2.0.0" />
-    <PackageReference Include="Magick.NET-Q8-x64" Version="7.9.2" />
+    <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="Magick.NET-Q8-x64" Version="7.10.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System">
@@ -22,6 +24,9 @@
   <ItemGroup>
     <None Update="Data\HeckBotDb.mdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="heckbot.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Settings.job">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

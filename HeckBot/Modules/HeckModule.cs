@@ -277,7 +277,7 @@ namespace HeckBot.Modules
 
             // Create a new timer and start it.
             ShieldTimer timer = new ShieldTimer(Context.User, Context.Channel, hours);
-            await _shieldService.StartShieldTimer(timer);
+            await _shieldService.StartShieldTimer(timer, true);
 
             // Let the user know.
             await ReplyAsync("I've started a " + hours + " hour shield timer for you, " + Context.User.Username + ".  Make sure you have 'Allow direct messages from server members' enabled so that I can send you reminders about your shield.");

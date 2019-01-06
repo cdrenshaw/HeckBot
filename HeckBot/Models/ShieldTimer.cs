@@ -1,7 +1,5 @@
 ﻿using Discord.WebSocket;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Timers;
 
 namespace HeckBot.Models
@@ -27,10 +25,26 @@ namespace HeckBot.Models
             Timer.Start();
         }
 
+        public ShieldTimer(SocketUser user, ISocketMessageChannel channel, DateTime shieldEndTime, DateTime nextNotificationTime, int dbId)
+        {
+            User = user;
+            Channel = channel;
+            ShieldEndTime = shieldEndTime;
+            NextNotificationTime = nextNotificationTime;
+            DbId = dbId;
+            
+            Timer = new Timer((NextNotificationTime - DateTime.Now).TotalMilliseconds);
+            Timer.Elapsed += Timer_Elapsed;
+            Timer.AutoReset = true;
+            Timer.Start();
+        }
+
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             TimerTicked?.Invoke(this);
         }
+
+        public int DbId { get; set; }
 
         public SocketUser User { get; private set; }
 

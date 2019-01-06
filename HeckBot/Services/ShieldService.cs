@@ -12,6 +12,7 @@ namespace HeckBot.Services
     public class ShieldService
     {
         private readonly DiscordShardedClient _client;
+        private readonly DbService _db;
         private readonly IServiceProvider _services;
 
         private List<ShieldTimer> _shieldTimers;
@@ -19,16 +20,79 @@ namespace HeckBot.Services
         public ShieldService(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
+            _db = services.GetRequiredService<DbService>();
             _services = services;
 
             _shieldTimers = new List<ShieldTimer>();
+
+            RestoreSavedShields();
         }
 
-        public async Task StartShieldTimer(ShieldTimer timer)
+        private async Task RestoreSavedShields()
         {
-            timer.TimerTicked += Timer_TimerTicked;
+            var shields = await _db.GetSavedShields();
 
-            await Task.Run(() => _shieldTimers.Add(timer));
+            if (shields != null)
+            {
+                foreach (var s in shields)
+                {
+                    var channel = _client.GetChannel(s.ChannelId);
+                    var user = _client.GetUser(s.UserId);
+                    
+                    // Check if the shield expired
+                    if (s.ShieldEndTime < DateTime.Now)
+                    {
+                        try
+                        {
+                            // DM the user an update on their shield.
+                            await user.SendMessageAsync("Your shield has expired!");
+                        }
+                        catch
+                        {
+                            // Something went wrong.  Send the message to the channel the timer request originated from.
+                            await ((ISocketMessageChannel)channel).SendMessageAsync(user.Username + "'s shield expired, but something is preventing us from sending them a DM to let them know.");
+                        }
+
+                        // clean up this timer.
+                        await _db.DeleteShield(s.Id);
+
+                        continue;
+                    }
+
+                    ShieldTimer timer;
+
+                    if (s.NextNotificationTime < DateTime.Now)
+                    {
+                        timer = new ShieldTimer(user, (ISocketMessageChannel)channel, s.ShieldEndTime, DateTime.Now.Add(new TimeSpan(0, 1, 0)), s.Id);
+                        await StartShieldTimer(timer, false);
+
+                        continue;
+                    }
+
+                    timer = new ShieldTimer(user, (ISocketMessageChannel)channel, s.ShieldEndTime, s.NextNotificationTime, s.Id);
+                    await StartShieldTimer(timer, false);
+                }
+            }
+        }
+
+        public async Task<bool> StartShieldTimer(ShieldTimer timer, bool saveTimer)
+        {
+            bool success = true;
+
+            if (saveTimer)
+                success = await _db.SaveShield(timer);
+
+            if (success)
+            {
+                timer.TimerTicked += Timer_TimerTicked;
+                _shieldTimers.Add(timer);
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public async Task<bool> StopShieldTimers(SocketUser user)
@@ -39,7 +103,8 @@ namespace HeckBot.Services
                 foreach (var timer in timers)
                 {
                     timer.Timer.Stop();
-                    await Task.Run(() => _shieldTimers.Remove(timer));
+                    _shieldTimers.Remove(timer);
+                    await _db.DeleteShield(timer.DbId);
                 }
 
                 return true;
@@ -76,8 +141,9 @@ namespace HeckBot.Services
                 shieldTimer.Timer.Stop();
                 shieldTimer.Timer.Dispose();
                 _shieldTimers.Remove(shieldTimer);
+                await _db.DeleteShield(shieldTimer.DbId);
                 shieldTimer.Dispose();
-
+                
                 return;
             }
 
@@ -94,6 +160,8 @@ namespace HeckBot.Services
                 shieldTimer.Timer.Interval = timeUntilNotification.TotalMilliseconds;
                 // start the timer.
                 shieldTimer.Timer.Start();
+
+                await _db.UpdateShield(shieldTimer.DbId, shieldTimer.NextNotificationTime);
 
                 try
                 {
@@ -150,6 +218,7 @@ namespace HeckBot.Services
                     shieldTimer.Timer.Stop();
                     shieldTimer.Timer.Dispose();
                     _shieldTimers.Remove(shieldTimer);
+                    await _db.DeleteShield(shieldTimer.DbId);
                     shieldTimer.Dispose();
 
                     return;
@@ -161,6 +230,8 @@ namespace HeckBot.Services
             shieldTimer.Timer.Interval = timeUntilNotification.TotalMilliseconds;
             // start the timer.
             shieldTimer.Timer.Start();
+
+            await _db.UpdateShield(shieldTimer.DbId, shieldTimer.NextNotificationTime);
 
             try
             {
