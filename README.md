@@ -5,7 +5,7 @@ Add it to your own server by clicking here: https://discordapp.com/api/oauth2/au
 
 Note that permissions=35840 is the minimum required for the bot to work since it sends the quests as a message with a .png attachment.
 
-<img src="https://www.nerdarray.net/Images/HeckBot/screenshot.png" alt="sample application output" />
+<img src="https://www.nerdarray.net/Images/HeckBot/preview.png" alt="sample application output" />
 
 To run from source, you'll need a Discord bot token.
 
