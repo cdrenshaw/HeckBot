@@ -59,6 +59,12 @@ namespace HeckBot.Services
                             continue;
                         }
 
+                        // make sure we're not inserting any duplicates into memory.
+                        // this method gets called for each shard that starts.
+                        var existingShield = _shieldTimers.Where(t => t.User.Id == s.UserId).FirstOrDefault();
+                        if (existingShield != null)
+                            continue;
+
                         ShieldTimer timer;
 
                         if (s.NextNotificationTime < DateTime.Now)
@@ -164,7 +170,7 @@ namespace HeckBot.Services
             TimeSpan timeUntilNotification;
 
             // more than an hour until the shield expires.
-            if (timeLeft.TotalMinutes > 60) 
+            if (timeLeft.TotalMinutes >= 60) 
             {
                 // notify again in an hour
                 shieldTimer.NextNotificationTime = shieldTimer.NextNotificationTime.AddHours(1);
