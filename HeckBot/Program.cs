@@ -32,16 +32,16 @@ namespace HeckBot
             using (var services = ConfigureServices(config))
             {
                 var client = services.GetRequiredService<DiscordShardedClient>();
+                _shieldService = services.GetRequiredService<ShieldService>();
 
                 // The Sharded Client does not have a Ready event.
                 // The ShardReady event is used instead, allowing for individual
                 // control per shard.
                 client.ShardReady += ReadyAsync;
                 client.Log += LogAsync;
+                client.ShardConnected += Client_ShardConnected;
 
                 await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-
-                _shieldService = services.GetRequiredService<ShieldService>();
 
                 // Tokens should be considered secret data, and never hard-coded.
                 await client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("HECKBOT_TOKEN"));
@@ -49,6 +49,11 @@ namespace HeckBot
 
                 await Task.Delay(-1);
             }
+        }
+
+        private async Task Client_ShardConnected(DiscordSocketClient arg)
+        {
+            await _shieldService.RestoreSavedShields();
         }
 
         private ServiceProvider ConfigureServices(DiscordSocketConfig config)
@@ -65,9 +70,8 @@ namespace HeckBot
                 .BuildServiceProvider();
         }
 
-        private async Task<Task> ReadyAsync(DiscordSocketClient shard)
+        private Task ReadyAsync(DiscordSocketClient shard)
         {
-            await _shieldService.RestoreSavedShields();
             Console.WriteLine($"Shard Number {shard.ShardId} is connected and ready!");
             return Task.CompletedTask;
         }

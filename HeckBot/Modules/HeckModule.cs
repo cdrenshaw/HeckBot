@@ -24,7 +24,7 @@ namespace HeckBot.Modules
         public async Task QuestsAsync()
         {
             // First quest.
-            var one = new DateTime(2018, 02, 13, 06, 05, 00, DateTimeKind.Utc).ToLocalTime();
+            var one = new DateTime(2018, 02, 13, 06, 00, 00, DateTimeKind.Utc).ToLocalTime();
             // Current time.
             var ct = DateTime.Now.ToLocalTime();
             // Hours between first quest and now.
@@ -75,7 +75,7 @@ namespace HeckBot.Modules
 
             if (m <= 0) // this is the current quest.
             {
-                var mFull = m + 55;
+                var mFull = m + 60;
                 var min = Math.Floor(mFull);  // how many minutes left on the quest.
 
                 new Drawables()
