@@ -1,7 +1,10 @@
 # HeckBot
 A sharded Discord bot that reports the current and upcoming quests, and tracks shield timers for the mobile game, Kingdoms of Heckfire.
 
-Add it to your own server by clicking here: https://discordapp.com/api/oauth2/authorize?client_id=529505070941995009&scope=bot&permissions=35840
+<H1>**UPDATE** March 3rd, 2020</H1>
+Since I haven't played this game in a long time, I am no longer keeping up with updates and this bot is no longer useful.  As of today, I have decided that the resources allocated to host it would be better served elsewhere. 
+
+<strike>Add it to your own server by clicking here: https://discordapp.com/api/oauth2/authorize?client_id=529505070941995009&scope=bot&permissions=35840</strike>
 
 Note that permissions=35840 is the minimum required for the bot to work since it sends the quests as a message with a .png attachment.
 
